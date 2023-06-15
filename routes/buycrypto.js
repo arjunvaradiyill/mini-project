@@ -58,6 +58,7 @@ router.post('/buy',(req,res)=>{
 }
 )
 //buy
+
 router.post('/payment',(req,res)=>{//buy
    
     //res.send('sanjo')
@@ -71,44 +72,6 @@ router.post('/payment',(req,res)=>{//buy
     global.t = 100*parseInt(req.body.quantity);
         global.vall=true;
      }
-    // let am=parseInt(req.body.quantity)+parseInt(req.session.user.wallet)
-    //     let t = 100*parseInt(req.body.quantity);
-// global.orderno=global.orderno+1;
-
-// console.log(global.orderno);
-
-    // let am=parseInt(req.body.quantity)+parseInt(req.session.user.wallet)
-    // let t = 100*parseInt(req.body.quantity);
-    // bchelpers.generateRazorPay(global.t)
-
-    // var options = {
-    //     "key": "rzp_test_xbkkCY21TwzcJn", // Enter the Key ID generated from the Dashboard
-    //     "amount": "50000", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-    //     "currency": "INR",
-    //     "name": "Acme Corp",
-    //     "description": "Test Transaction",
-    //     "image": "https://example.com/your_logo",
-    //     "order_id": "order_IluGWxBm9U8zJ8", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-    //     "handler": function (response){
-    //         alert(response.razorpay_payment_id);
-    //         alert(response.razorpay_order_id);
-    //         alert(response.razorpay_signature);
-    //         verifyPayment(response);
-    //     }, 
-    //      "prefill": {
-    //         "name": "Gaurav Kumar",
-    //         "email": "gaurav.kumar@example.com",
-    //         "contact": "9000090000"
-    //     },
-    //     "notes": {
-    //         "address": "Razorpay Corporate Office"
-    //     },
-    //     "theme": {
-    //         "color": "#3399cc"
-    //     }
-    //           };
-    //           var razorpayObject=new Razorpay(options);
-    //           razorpayObject.open();
     stripe.customers.create({
         email: req.body.stripeEmail,
         source: req.body.stripeToken,
@@ -137,22 +100,8 @@ router.post('/payment',(req,res)=>{//buy
     .catch((err) => {
         res.send(err)       // If some error occurs
     });
-    // console.log(req.body.quantity); 
     bchelpers.updateProduct(req.session.user._id,global.am)
-    // res.redirect('/mainpage/buycrypto');
-    
-
-// console.log('reached here');
-// let c=validateChainIntegrity();
-// if(c){
-//     console.log('block valid');
-// }
-// else{
-//     console.log('invalid');
-// }
-// let am=parseInt(req.body.quantity)
-// bchelpers.updateProduct(req.session.user._id,am)
-// console.log('nyka');
+  
     logCoin.addNewBlock(
             new Block(1, new Date(), {
                 sender: "BLOCKCHAINWALLET",
@@ -165,84 +114,38 @@ router.post('/payment',(req,res)=>{//buy
         if(nn){
             console.log('Block Valid');
         }
-        // if(req.session.user.wallet!='NaN'){
-        //     let am=parseInt(req.body.quantity)
-        //     console.log('lolo');
-        // }
-        // else{
-        //     let am=parseInt(req.body.quantity)
-        //     console.log('lolaa');
-        // }
-    //    console.log('loko');
-            // console.log(parseInt(req.body.quantity));
-            // console.log(parseInt(req.session.user.wallet));
-            // console.log(am);
-            // console.log('jn');
-        // bchelpers.updateProduct(req.session.user._id,req.body.quantity)
-            // bchelpers.addBusiness(logcoin)
-        //    console.log(logcoin)
         console.log(JSON.stringify(logCoin, null, 5))
-
-
-
-        //hi stripe code here
-        // var stripe = require('stripe')('sk_test_51NHlAXSAfXyrG5MX9ahZ6c6PDbPmhO4fGPK2nxZh4bb3VM933EIQALAANtF51e038CRIAtbuNzUQACyzGNY6nniW004GuyHIN8')
-
-
- 
-// View Engine Setup
-// app.set('views', path.join(__dirname, 'views'))
-// app.set('view engine', 'ejs')
- 
-// app.get('/', function(req, res){
-//     res.render('Home', {
-//        key: Publishable_Key
-//     })
-// })
- 
-// app.post('/payment', function(req, res){
- 
-//     // Moreover you can take more details from user
-//     // like Address, Name, etc from form
-//     stripe.customers.create({
-//         email: req.body.stripeEmail,
-//         source: req.body.stripeToken,
-//         name: 'Gourav Hammad',
-//         address: {
-//             line1: 'TC 9/4 Old MES colony',
-//             postal_code: '452331',
-//             city: 'Indore',
-//             state: 'Madhya Pradesh',
-//             country: 'India',
-//         }
-//     })
-//     .then((customer) => {
- 
-//         return stripe.charges.create({
-//             amount: 2500,     // Charging Rs 25
-//             description: 'Web Development Product',
-//             currency: 'INR',
-//             customer: customer.id
-//         });
-//     })
-//     .then((charge) => {
-//         res.send("Success")  // If no error occurs
-//     })
-//     .catch((err) => {
-//         res.send(err)       // If some error occurs
-//     });
-// })
- 
-// app.listen(port, function(error){
-//     if(error) throw error
-//     console.log("Server created Successfully")
-// })
-  //stripe end      
 })
 
-// const button = document.querySelector("button")
-// button.addEventListener("click",()=>{
-//     console.log('checkout')
-// })
+
+router.post("/create-checkout-session", async (req, res) => {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: req.body.items.map(item => {
+          const storeItem = storeItems.get(item.id)
+          return {
+            price_data: {
+              currency: "inr",
+              product_data: {
+                name: storeItem.name,
+              },
+              unit_amount: storeItem.priceInCents,
+              // unit_amount: req.body.vall,
+            },
+            quantity: item.quantity,
+          }
+        }),
+      //   success_url: `${process.env.CLIENT_URL}/success.html`,
+      //   cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
+      success_url: 'http://localhost:3000/success.html',
+        cancel_url: 'http://localhost:3000/cancel.html',
+      })
+      res.json({ url: session.url })
+    } catch (e) {
+      res.status(500).json({ error: e.message })
+    }
+  })
 
 module.exports = router;

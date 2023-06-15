@@ -3,6 +3,28 @@
 <title>Stripe Payment Demo</title>
 <body>
 	<h3>Welcome to Payment Gateway</h3>
+
+<script>
+
+const buy_now_button = document.querySelector('#pay-btn')
+
+    buy_now_button.addEventListener('click', event => {
+        var stripe = Stripe("pk_test_51NHlAXSAfXyrG5MXv8Gi1ZRj4QjgQznakCbEs4aa0wKyQzz8zkYruPWZ9rQig8rbhqcCLtPsgH7fS0Tc16ubmxnj001xUNKqGM")
+        stripe.redirectToCheckout({
+            // Make the id field from the Checkout Session creation API response
+            // available to this file, so you can provide it as parameter here
+            // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
+            sessionId: "{{ session_id }}"
+        }).then(function (result) {
+            // If `redirectToCheckout` fails due to a browser or network
+            // error, display the localized error message to your customer
+            // using `result.error.message`.
+        });
+    })
+
+</script>
+
+	<button id="pay-btn" onclick="handleBuy()">buy</button>
   
 	<form action="payment" method="POST">
      
